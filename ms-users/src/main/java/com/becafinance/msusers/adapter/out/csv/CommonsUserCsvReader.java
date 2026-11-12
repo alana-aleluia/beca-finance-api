@@ -2,7 +2,7 @@ package com.becafinance.msusers.adapter.out.csv;
 
 import com.becafinance.msusers.application.dto.CsvRow;
 import com.becafinance.msusers.application.exception.InvalidCsvException;
-import com.becafinance.msusers.application.port.out.UserCsvReader;
+import com.becafinance.msusers.application.port.out.UserCsvReaderPort;
 import org.apache.commons.csv.CSVFormat;
 import org.springframework.stereotype.Component;
 import java.io.*;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class CommonsUserCsvReader implements UserCsvReader {
+public class CommonsUserCsvReader implements UserCsvReaderPort {
     private static final int MAX_RECORDS = 10000;
 
     @Override

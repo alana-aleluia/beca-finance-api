@@ -1,4 +1,4 @@
-package com.becafinance.msusers.domain.port.out;
+package com.becafinance.msusers.application.port.out;
 import com.becafinance.msusers.domain.model.User;
 import java.util.List;
 import java.util.Optional;

@@ -2,19 +2,21 @@ package com.becafinance.msusers.application.usecase;
 
 import com.becafinance.msusers.application.dto.ImportResult;
 import com.becafinance.msusers.application.dto.ImportResult.RowError;
-import com.becafinance.msusers.application.port.out.UserCsvReader;
+import com.becafinance.msusers.application.port.out.UserCsvReaderPort;
 import com.becafinance.msusers.domain.exception.DuplicateEmailException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.stereotype.Service;
+import com.becafinance.msusers.application.port.in.CreateUserPort;
+import com.becafinance.msusers.application.port.in.ImportUsersPort;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ImportUsersUseCase {
-    private final UserCsvReader csvReader;
-    private final CreateUserUseCase createUser;
-    public ImportUsersUseCase(UserCsvReader csvReader, CreateUserUseCase createUser) {
+public class ImportUsersUseCase implements ImportUsersPort {
+    private final UserCsvReaderPort csvReader;
+    private final CreateUserPort createUser;
+    public ImportUsersUseCase(UserCsvReaderPort csvReader, CreateUserPort createUser) {
         this.csvReader = csvReader;
         this.createUser = createUser;
     }

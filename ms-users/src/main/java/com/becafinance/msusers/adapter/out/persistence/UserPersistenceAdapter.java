@@ -1,6 +1,6 @@
 package com.becafinance.msusers.adapter.out.persistence;
 import com.becafinance.msusers.domain.model.User;
-import com.becafinance.msusers.domain.port.out.UserRepositoryPort;
+import com.becafinance.msusers.application.port.out.UserRepositoryPort;
 import com.becafinance.msusers.domain.exception.DuplicateEmailException;
 import com.becafinance.msusers.adapter.out.persistence.entity.UserJpaEntity;
 import com.becafinance.msusers.adapter.out.persistence.repository.UserJpaRepository;
@@ -17,7 +17,7 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     public User save(User user) {
         try {
             return toDomain(repository.saveAndFlush(new UserJpaEntity(
-                user.getId(), user.getName(), user.getEmail(), user.getCreatedAt())));
+                user.getId(), user.getName(), user.getEmail(), user.getCreatedAt(), user.getPasswordHash())));
         } catch (DataIntegrityViolationException exception) {
             if (repository.findByEmail(user.getEmail())
                 .filter(found -> !found.getId().equals(user.getId())).isPresent()) {
@@ -33,6 +33,6 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     @Override public Optional<User> findByEmail(String email) { return repository.findByEmail(email).map(this::toDomain); }
     @Override public void deleteById(Long id) { repository.deleteById(id); }
     private User toDomain(UserJpaEntity entity) {
-        return new User(entity.getId(), entity.getName(), entity.getEmail(), entity.getCreatedAt());
+        return new User(entity.getId(), entity.getName(), entity.getEmail(), entity.getCreatedAt(), entity.getPasswordHash());
     }
 }
