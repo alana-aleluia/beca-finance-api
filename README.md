@@ -2,8 +2,7 @@
 
 API de gestão financeira em dois microsserviços independentes: usuários (8081) e
 transações (8082), com PostgreSQL próprio, Flyway e arquitetura hexagonal.
-Requisitos oficiais usados como referência: documento local do desafio. O texto
-interno não precisa ser publicado no repositório.
+Requisitos oficiais usados como referência: documento local do desafio.
 
 ## Pré-requisitos e configuração
 
