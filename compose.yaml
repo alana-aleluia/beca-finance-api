@@ -4,11 +4,71 @@ services:
     environment:
       POSTGRES_DB: users_db
       POSTGRES_USER: app_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD}
     ports:
-      - "127.0.0.1:5433:5432"
+      - "127.0.0.1:${USERS_DB_PORT:-5433}:5432"
     volumes:
       - users_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app_user -d users_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  postgres-transactions:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: transactions_db
+      POSTGRES_USER: transactions_user
+      POSTGRES_PASSWORD: ${TRANSACTIONS_DB_PASSWORD:?Defina TRANSACTIONS_DB_PASSWORD}
+    ports:
+      - "127.0.0.1:${TRANSACTIONS_DB_PORT:-5434}:5432"
+    volumes:
+      - transactions_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U transactions_user -d transactions_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  ms-users:
+    build: ./ms-users
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-users:5432/users_db
+      DB_PASSWORD: ${DB_PASSWORD}
+      SECURITY_ADMIN_USER_IDS: ${SECURITY_ADMIN_USER_IDS:-}
+    ports:
+      - "127.0.0.1:${USERS_HTTP_PORT:-8081}:8081"
+    depends_on:
+      postgres-users:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8081/v3/api-docs"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 20
+  ms-transactions:
+    build: ./ms-transactions
+    environment:
+      TRANSACTIONS_DB_URL: jdbc:postgresql://postgres-transactions:5432/transactions_db
+      TRANSACTIONS_DB_PASSWORD: ${TRANSACTIONS_DB_PASSWORD}
+      MS1_URL: http://ms-users:8081
+      MOCKAPI_ACCOUNTS_URL: ${MOCKAPI_ACCOUNTS_URL:?Defina MOCKAPI_ACCOUNTS_URL}
+      INTEGRATIONS_BRASILAPI_URL: ${BRASILAPI_URL:-https://brasilapi.com.br}
+    ports:
+      - "127.0.0.1:${TRANSACTIONS_HTTP_PORT:-8082}:8082"
+    depends_on:
+      postgres-transactions:
+        condition: service_healthy
+      ms-users:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8082/v3/api-docs"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 20
 
 volumes:
   users_data:
+  transactions_data:
+    name: ${TRANSACTIONS_VOLUME_NAME:-beca-transactions_transactions_data}

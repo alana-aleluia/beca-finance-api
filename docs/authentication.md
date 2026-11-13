@@ -24,6 +24,8 @@ header Authorization em logs de aplicação, proxy ou ferramentas de observabili
 Retorna somente `{"id":123,"email":"usuario@example.com"}`. Credenciais incorretas,
 usuário inexistente e usuário sem senha retornam 401, sem diferenciar essas causas.
 Não há login que gere token: cada requisição é autenticada novamente.
+Não há rate limiting nem bloqueio temporário após falhas de autenticação.
+BCrypt não limita a quantidade de tentativas.
 
 ## Autorização
 
@@ -34,6 +36,7 @@ Não há login que gere token: cada requisição é autenticada novamente.
 | GET, PUT, DELETE /users/{id} | Somente o próprio ID autenticado |
 | GET /users | Administrador |
 | POST /users/import | Administrador |
+| Swagger e /v3/api-docs | Públicos; operações protegidas continuam exigindo Basic |
 | Outras rotas | Acesso negado |
 
 Administradores também só atualizam/excluem o próprio perfil. A autoridade administrativa
@@ -42,20 +45,36 @@ Por padrão nenhum usuário é administrador. O responsável pela execução pod
 a autoridade a contas existentes configurando IDs confiáveis, por exemplo
 `--security.admin-user-ids=1,5`. Confira os IDs antes de configurar; não há tela,
 endpoint de promoção ou conta administrativa padrão.
+A mesma propriedade pode ser configurada pela variável de ambiente
+`SECURITY_ADMIN_USER_IDS=1,5` no processo do MS1. Reinicie a aplicação após
+alterar os IDs. No Compose completo, a variável do `.env` ou do ambiente do
+terminal é repassada ao container `ms-users`. Para executar fora do Compose,
+defina-a no processo Java: o Spring não importa `.env` automaticamente.
+Configurar o ID de um usuário sem senha não permite que ele autentique.
+Veja o [README](../README.md) para o procedimento e as restrições.
 
 PUT altera somente nome/e-mail, preservando hash e data de criação. Não há troca de
 senha nesta entrega. Depois de trocar o e-mail, use o novo e-mail no Basic.
 
 O CSV continua exigindo exatamente `name,email`. Usuários antigos/importados com hash
-nulo não autenticam. Nenhuma senha padrão é criada; ativação fica fora do escopo.
+nulo não autenticam e recebem 401. Nenhuma senha padrão é criada. Não existe
+fluxo de ativação ou definição posterior de senha; isso fica fora do escopo.
+O cadastro público com o mesmo e-mail é rejeitado por duplicidade e não ativa
+o usuário importado.
 
-## Limites e futura integração
+## Integração com o MS2 e limites
 
-O MS2 deverá validar as credenciais no MS1 por HTTPS e utilizar o ID retornado por
-/auth/me como identidade, sem confiar em userId enviado pelo cliente. Deverá tratar
-indisponibilidade/timeout do MS1, restringir operações financeiras ao dono e definir
-a política de retenção das transações após exclusão do usuário. Não há integração
-implementada nesta fase.
+O MS2 valida as credenciais Basic no MS1 por `GET /auth/me` a cada requisição
+protegida e utiliza o ID retornado como identidade, sem confiar em userId enviado
+pelo cliente. Não copia usuários ou hashes nem envia Basic à MockAPI ou BrasilAPI.
+Credenciais inválidas resultam em 401; indisponibilidade, timeout ou resposta
+inválida do MS1 resultam em 503. O Compose usa HTTP na rede local entre containers;
+use HTTPS fora do ambiente local.
+
+O MS2 restringe consulta, atualização e cancelamento ao usuário de origem da
+transação; cada usuário consulta o próprio saldo. A exclusão de um usuário no MS1
+impede sua autenticação, mas não apaga o histórico financeiro no MS2. A política
+de retenção posterior permanece fora do escopo desta entrega.
 
 CSRF está desativado para esta API destinada a clientes que enviam Basic explicitamente.
 Não use esta configuração como login de navegador com credenciais Basic memorizadas:
