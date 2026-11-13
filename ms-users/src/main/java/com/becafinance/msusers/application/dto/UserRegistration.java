@@ -12,6 +12,7 @@ public record UserRegistration(
     }
 
     @AssertTrue(message = "A senha deve ter no maximo 72 bytes em UTF-8")
+    @io.swagger.v3.oas.annotations.media.Schema(hidden = true)
     public boolean isPasswordWithinBcryptLimit() {
         return password == null || password.getBytes(StandardCharsets.UTF_8).length <= 72;
     }
