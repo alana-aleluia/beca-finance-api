@@ -23,6 +23,7 @@ public class SecurityConfig {
             .authenticationProvider(provider)
             .httpBasic(withDefaults())
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers(HttpMethod.POST, "/users").permitAll()
                 .requestMatchers(HttpMethod.GET, "/auth/me").authenticated()
                 .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")

@@ -19,6 +19,7 @@ public class UserController {
         this.users = users;
     }
     @PostMapping
+    @io.swagger.v3.oas.annotations.security.SecurityRequirements
     public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRegistration request) {
         var created = createUser.execute(request.name(), request.email(), request.password());
         return ResponseEntity.created(URI.create("/users/" + created.getId())).body(UserResponse.from(created));
