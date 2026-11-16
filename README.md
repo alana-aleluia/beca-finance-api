@@ -2,8 +2,7 @@
 
 API de gestão financeira em dois microsserviços independentes: usuários (8081) e
 transações (8082), com PostgreSQL próprio, Flyway e arquitetura hexagonal.
-Requisitos oficiais usados como referência: documento local do desafio.
-
+Projeto desenvolvido como parte do Desafio Beca Java 2026.
 ## Pré-requisitos e configuração
 
 - Rancher Desktop com Moby/dockerd, Docker CLI e Docker Compose disponíveis.
@@ -310,7 +309,8 @@ Set-Location ms-transactions
 ```
 
 Os testes criam schemas novos, sem apagar os existentes. Sem TEST_DATABASE_URL,
-testes PostgreSQL são ignorados. Mocks e H2 não são prova de bloqueio PostgreSQL.
+testes PostgreSQL são ignorados. A validação do bloqueio pessimista requer testes de
+integração com PostgreSQL real.
 Testes externos são opt-in: `MOCKAPI_LIVE_URL` (recurso accounts com usuário 2) e
 `BRASILAPI_LIVE_URL=https://brasilapi.com.br`, com o mesmo perfil. Sem essas variáveis,
 esses testes são ignorados, evitando dependência externa na suíte unitária.
@@ -322,6 +322,3 @@ Relatórios: `target/surefire-reports`, `target/failsafe-reports` e
 Arquivo de importação: `examples/users.csv`, cabeçalho exato `name,email`, UTF-8.
 Importação exige administrador configurado, preserva sucesso parcial e não cria senhas.
 Documentação detalhada do MS1: `docs/authentication.md`.
-JWT, Excel/PDF, Testcontainers e Azure são bônus não implementados.
-Jira/Kanban, compartilhamento com o mentor, publicação do código e demonstração
-final devem ser comprovados pelo responsável pela entrega; não são inferidos pelo código.
